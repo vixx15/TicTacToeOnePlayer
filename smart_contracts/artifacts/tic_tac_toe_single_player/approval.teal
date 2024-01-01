@@ -1,0 +1,466 @@
+#pragma version 8
+intcblock 0 1 511 2 448 292 146 273
+bytecblock 0x626f6172645f7374617465 0x67616d655f737461747573 0x706c617965725f6f5f7374617465 0x706c617965725f785f7374617465 0x 0x706c617965725f6f5f696e646578 0x6265745f616d6f756e74
+txn NumAppArgs
+intc_0 // 0
+==
+bnz main_l6
+txna ApplicationArgs 0
+pushbytes 0x8ec45c22 // "play_action_logic(uint64)string"
+==
+bnz main_l5
+txna ApplicationArgs 0
+pushbytes 0x7b3e7130 // "money_refund_logic()void"
+==
+bnz main_l4
+err
+main_l4:
+txn OnCompletion
+intc_0 // NoOp
+==
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub moneyrefundlogiccaster_10
+intc_1 // 1
+return
+main_l5:
+txn OnCompletion
+intc_0 // NoOp
+==
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+callsub playactionlogiccaster_9
+intc_1 // 1
+return
+main_l6:
+txn OnCompletion
+intc_0 // NoOp
+==
+bnz main_l10
+txn OnCompletion
+intc_1 // OptIn
+==
+bnz main_l9
+err
+main_l9:
+txn ApplicationID
+intc_0 // 0
+!=
+assert
+callsub optin_1
+intc_1 // 1
+return
+main_l10:
+txn ApplicationID
+intc_0 // 0
+==
+assert
+callsub create_0
+intc_1 // 1
+return
+
+// create
+create_0:
+proto 0 0
+bytec 6 // "bet_amount"
+pushint 1000000 // 1000000
+app_global_put
+bytec_0 // "board_state"
+bytec 4 // ""
+app_global_put
+bytec_1 // "game_status"
+intc_0 // 0
+app_global_put
+bytec 5 // "player_o_index"
+intc_0 // 0
+app_global_put
+bytec_2 // "player_o_state"
+intc_0 // 0
+app_global_put
+bytec_3 // "player_x_state"
+intc_0 // 0
+app_global_put
+retsub
+
+// opt_in
+optin_1:
+proto 0 0
+intc_1 // 1
+return
+
+// has_player_won
+hasplayerwon_2:
+proto 1 1
+frame_dig -1
+intc 4 // 448
+&
+intc 4 // 448
+==
+frame_dig -1
+pushint 56 // 56
+&
+pushint 56 // 56
+==
+||
+frame_dig -1
+pushint 7 // 7
+&
+pushint 7 // 7
+==
+||
+frame_dig -1
+intc 5 // 292
+&
+intc 5 // 292
+==
+||
+frame_dig -1
+intc 6 // 146
+&
+intc 6 // 146
+==
+||
+frame_dig -1
+pushint 73 // 73
+&
+pushint 73 // 73
+==
+||
+frame_dig -1
+intc 7 // 273
+&
+intc 7 // 273
+==
+||
+frame_dig -1
+pushint 84 // 84
+&
+pushint 84 // 84
+==
+||
+bnz hasplayerwon_2_l2
+intc_0 // 0
+b hasplayerwon_2_l3
+hasplayerwon_2_l2:
+intc_1 // 1
+hasplayerwon_2_l3:
+retsub
+
+// is_tie
+istie_3:
+proto 0 1
+intc_2 // 511
+bytec_3 // "player_x_state"
+app_global_get
+bytec_2 // "player_o_state"
+app_global_get
+|
+==
+retsub
+
+// available_positions
+availablepositions_4:
+proto 2 1
+frame_dig -2
+frame_dig -1
+|
+intc_2 // 511
+&
+intc_2 // 511
+^
+retsub
+
+// select_position_for_o
+selectpositionforo_5:
+proto 1 1
+intc_0 // 0
+store 0
+selectpositionforo_5_l1:
+load 0
+pushint 9 // 9
+<
+bz selectpositionforo_5_l5
+frame_dig -1
+load 0
+getbit
+intc_1 // 1
+==
+bnz selectpositionforo_5_l4
+load 0
+intc_1 // 1
++
+store 0
+b selectpositionforo_5_l1
+selectpositionforo_5_l4:
+bytec 5 // "player_o_index"
+load 0
+app_global_put
+selectpositionforo_5_l5:
+bytec 5 // "player_o_index"
+app_global_get
+retsub
+
+// play_action_logic
+playactionlogic_6:
+proto 1 1
+bytec 4 // ""
+frame_dig -1
+intc_0 // 0
+>=
+assert
+frame_dig -1
+pushint 8 // 8
+<=
+assert
+bytec_1 // "game_status"
+app_global_get
+intc_0 // 0
+==
+assert
+bytec_3 // "player_x_state"
+app_global_get
+intc_1 // 1
+frame_dig -1
+shl
+&
+intc_0 // 0
+==
+bytec_2 // "player_o_state"
+app_global_get
+intc_1 // 1
+frame_dig -1
+shl
+&
+intc_0 // 0
+==
+&&
+assert
+bytec_3 // "player_x_state"
+bytec_3 // "player_x_state"
+app_global_get
+intc_1 // 1
+frame_dig -1
+shl
+|
+app_global_put
+bytec_3 // "player_x_state"
+app_global_get
+callsub hasplayerwon_2
+bnz playactionlogic_6_l15
+playactionlogic_6_l1:
+callsub istie_3
+bnz playactionlogic_6_l14
+bytec_1 // "game_status"
+app_global_get
+intc_0 // 0
+==
+bnz playactionlogic_6_l12
+playactionlogic_6_l3:
+callsub getBoardState_8
+bytec_1 // "game_status"
+app_global_get
+intc_0 // 0
+==
+bnz playactionlogic_6_l11
+bytec_1 // "game_status"
+app_global_get
+intc_1 // 1
+==
+bnz playactionlogic_6_l10
+bytec_1 // "game_status"
+app_global_get
+intc_3 // 2
+==
+bnz playactionlogic_6_l9
+bytec_1 // "game_status"
+app_global_get
+pushint 3 // 3
+==
+bnz playactionlogic_6_l8
+err
+playactionlogic_6_l8:
+pushbytes 0x0009497473206120746965 // 0x0009497473206120746965
+frame_bury 0
+b playactionlogic_6_l16
+playactionlogic_6_l9:
+pushbytes 0x0017596f752068617665206c6f7374207468652067616d6521 // 0x0017596f752068617665206c6f7374207468652067616d6521
+frame_bury 0
+b playactionlogic_6_l16
+playactionlogic_6_l10:
+pushbytes 0x0023596f752068617665207375636363657366756c6c7920776f6e207468652067616d6521 // 0x0023596f752068617665207375636363657366756c6c7920776f6e207468652067616d6521
+frame_bury 0
+b playactionlogic_6_l16
+playactionlogic_6_l11:
+bytec_0 // "board_state"
+app_global_get
+frame_bury 0
+frame_dig 0
+len
+itob
+extract 6 0
+frame_dig 0
+concat
+frame_bury 0
+b playactionlogic_6_l16
+playactionlogic_6_l12:
+bytec_2 // "player_o_state"
+bytec_2 // "player_o_state"
+app_global_get
+intc_1 // 1
+bytec_3 // "player_x_state"
+app_global_get
+bytec_2 // "player_o_state"
+app_global_get
+callsub availablepositions_4
+callsub selectpositionforo_5
+shl
+|
+app_global_put
+bytec_2 // "player_o_state"
+app_global_get
+callsub hasplayerwon_2
+bz playactionlogic_6_l3
+bytec_1 // "game_status"
+intc_3 // 2
+app_global_put
+b playactionlogic_6_l3
+playactionlogic_6_l14:
+bytec_1 // "game_status"
+pushint 3 // 3
+app_global_put
+b playactionlogic_6_l3
+playactionlogic_6_l15:
+bytec_1 // "game_status"
+intc_1 // 1
+app_global_put
+b playactionlogic_6_l1
+playactionlogic_6_l16:
+retsub
+
+// money_refund_logic
+moneyrefundlogic_7:
+proto 0 0
+bytec_1 // "game_status"
+app_global_get
+intc_1 // 1
+==
+assert
+itxn_begin
+intc_1 // pay
+itxn_field TypeEnum
+txn Sender
+itxn_field Receiver
+bytec 6 // "bet_amount"
+app_global_get
+itxn_field Amount
+itxn_submit
+intc_1 // 1
+return
+
+// getBoardState
+getBoardState_8:
+proto 0 0
+bytec_0 // "board_state"
+bytec 4 // ""
+app_global_put
+intc_0 // 0
+store 1
+getBoardState_8_l1:
+load 1
+pushint 9 // 9
+<
+bz getBoardState_8_l10
+bytec_3 // "player_x_state"
+app_global_get
+load 1
+getbit
+intc_1 // 1
+==
+bnz getBoardState_8_l9
+bytec_2 // "player_o_state"
+app_global_get
+load 1
+getbit
+intc_1 // 1
+==
+bnz getBoardState_8_l8
+bytec_0 // "board_state"
+bytec_0 // "board_state"
+app_global_get
+pushbytes 0x2d // "-"
+concat
+app_global_put
+getBoardState_8_l5:
+load 1
+intc_3 // 2
+==
+load 1
+pushint 5 // 5
+==
+||
+load 1
+pushint 8 // 8
+==
+||
+bnz getBoardState_8_l7
+getBoardState_8_l6:
+load 1
+intc_1 // 1
++
+store 1
+b getBoardState_8_l1
+getBoardState_8_l7:
+bytec_0 // "board_state"
+bytec_0 // "board_state"
+app_global_get
+pushbytes 0x0a // "\n"
+concat
+app_global_put
+b getBoardState_8_l6
+getBoardState_8_l8:
+bytec_0 // "board_state"
+bytec_0 // "board_state"
+app_global_get
+pushbytes 0x4f // "O"
+concat
+app_global_put
+b getBoardState_8_l5
+getBoardState_8_l9:
+bytec_0 // "board_state"
+bytec_0 // "board_state"
+app_global_get
+pushbytes 0x58 // "X"
+concat
+app_global_put
+b getBoardState_8_l5
+getBoardState_8_l10:
+retsub
+
+// play_action_logic_caster
+playactionlogiccaster_9:
+proto 0 0
+bytec 4 // ""
+intc_0 // 0
+txna ApplicationArgs 1
+btoi
+frame_bury 1
+frame_dig 1
+callsub playactionlogic_6
+frame_bury 0
+pushbytes 0x151f7c75 // 0x151f7c75
+frame_dig 0
+concat
+log
+retsub
+
+// money_refund_logic_caster
+moneyrefundlogiccaster_10:
+proto 0 0
+callsub moneyrefundlogic_7
+retsub
